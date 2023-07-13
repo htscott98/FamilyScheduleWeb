@@ -1,0 +1,74 @@
+﻿@page "/"
+@using System.Data;
+
+<h2 class="mb-3">Todays Schedule</h2>
+
+<div class="mb-3">
+
+    @{
+        string sql = "SELECT EventOwner, EventSport, EventDate, EventStartTime, EventEndTime, EventLocation, EventAddress, Enabled, SubmittedDateTime " +
+        "FROM FamilySchedule_Events WHERE Enabled = 1 AND CONVERT(date, EventDate) = CONVERT(date, GetDate()) " +
+        "ORDER BY CONVERT(time, EventStartTime) ASC";
+
+        DataTable dt = Execute.ExecuteSelectReturnDT(Connection.InitDBConnection(), sql);
+
+        if (dt != null && dt.Rows.Count > 0)
+        {
+            foreach (DataRow row in dt.Rows)
+            {
+                <div class="card mb-1">
+                    <div class="card-body">
+                        <h5 class="card-title">@row["EventOwner"] - @row["EventSport"]</h5>
+                        <p class="card-text">@row["EventDate"] : @row["EventStartTime"] - @row["EventEndTime"]<br />@row["EventLocation"]<br />@row["EventAddress"]</p>
+
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card mb-1">
+                <div class="card-body">
+                    <h5 class="card-title m-0">No Scheduled Events</h5>
+                </div>
+            </div>
+        }
+
+
+    }
+
+    <h2 class="mt-5 mb-3">Upcoming Schedule</h2>
+
+    @{
+        sql = "SELECT EventOwner, EventSport, EventDate, EventStartTime, EventEndTime, EventLocation, EventAddress, Enabled, SubmittedDateTime " +
+        "FROM FamilySchedule_Events WHERE Enabled = 1 AND CONVERT(date, EventDate) > CONVERT(date, GetDate()) " +
+        "ORDER BY CONVERT(time, EventStartTime) ASC";
+
+        dt = Execute.ExecuteSelectReturnDT(Connection.InitDBConnection(), sql);
+
+        if (dt != null && dt.Rows.Count > 0)
+        {
+            foreach (DataRow row in dt.Rows)
+            {
+                <div class="card mb-1">
+                    <div class="card-body">
+                        <h5 class="card-title">@row["EventOwner"] - @row["EventSport"]</h5>
+                        <p class="card-text">@row["EventDate"] : @row["EventStartTime"] - @row["EventEndTime"]<br />@row["EventLocation"]<br />@row["EventAddress"]</p>
+
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card mb-1">
+                <div class="card-body">
+                    <h5 class="card-title m-0">No Scheduled Events</h5>
+                </div>
+            </div>
+        }
+
+
+    }
+
+</div>

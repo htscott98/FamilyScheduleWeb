@@ -1,0 +1,190 @@
+﻿@page "/NewEvent"
+@using System.Data;
+
+<h2 class="mb-3">New Event</h2>
+
+<div class="mb-3">
+
+    <div class="row">
+        <div class="form-group col-md-3 mt-3">
+            <label><span style="color: red; font-weight: 700;">*</span> Child</label>
+            <select class="form-select" @bind="Child">
+                <option selected disabled>Select...</option>
+                <option>Kingston</option>
+                <option>Zander</option>
+            </select>
+        </div>
+        <div class="form-group col-md-3 mt-3">
+            <label><span style="color: red; font-weight: 700;">*</span> Sport</label>
+            <select class="form-select" @bind="Sport">
+                <option selected disabled>Select...</option>
+                <option>Basketball</option>
+                <option>Baseball</option>
+                <option>Football</option>
+                <option>Soccer</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-3 mt-3">
+            <label><span style="color: red; font-weight: 700;">*</span> Date</label>
+            <input type="date" class="form-control" @bind="Date" />
+        </div>
+        <div class="form-group col-md-3 mt-3">
+            <label><span style="color: red; font-weight: 700;">*</span> Start Time</label>
+            <input type="time" class="form-control" @bind="StartTime" />
+        </div>
+        <div class="form-group col-md-3 mt-3">
+            <label><span style="color: red; font-weight: 700;">*</span> End Time</label>
+            <input type="time" class="form-control" @bind="EndTime" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-3 mt-3">
+            <label>Location</label>
+            <input type="text" class="form-control" @bind="Location" />
+        </div>
+        <div class="form-group col-md-3 mt-3">
+            <label>Address</label>
+            <input type="text" class="form-control" @bind="Address" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-3 mt-3">
+            <button class="btn" style="background-color:#ED702E; color:white;" onclick="@Submit">Submit</button>
+        </div>
+    </div>
+    <div class="alert @AlertType mt-3" role="alert" hidden="@AlertHide">
+        @AlertText
+
+        @{
+        if(@AlertType == "alert-success")
+        {
+            <br><a href="" class="btn btn-link">View Schedule</a>
+        }
+
+        }
+
+    </div>
+
+</div>
+
+
+@code {
+
+    private string Child;
+    private string Sport;
+    private DateTime Date = DateTime.Now;
+    private DateTime StartTime;
+    private DateTime EndTime;
+    private string Location;
+    private string Address;
+
+    private string AlertText;
+    private string AlertType;
+    private bool AlertHide;
+
+
+    private void Submit()
+    {
+        try
+        {
+            AlertText = "";
+            AlertHide = true;
+
+
+            if (string.IsNullOrEmpty(Child))
+            {
+                AlertText = "Verify you have selected the child for which the event is for.";
+                AlertHide = false;
+                AlertType = "alert-danger";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(Sport))
+            {
+                AlertText = "Verify you have selected the sport for which the event is for.";
+                AlertHide = false;
+                AlertType = "alert-danger";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(Date.ToString()))
+            {
+                AlertText = "Verify you have selected the date for the event.";
+                AlertHide = false;
+                AlertType = "alert-danger";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(StartTime.ToString()))
+            {
+                AlertText = "Verify you have selected the start time for the event.";
+                AlertHide = false;
+                AlertType = "alert-danger";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(EndTime.ToString()))
+            {
+                AlertText = "Verify you have selected the end time for the event.";
+                AlertHide = false;
+                AlertType = "alert-danger";
+                return;
+            }
+
+            if (EndTime < StartTime)
+            {
+                AlertText = "Verify you have entered a valid start time and end time.";
+                AlertHide = false;
+                AlertType = "alert-danger";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(Location))
+            {
+                Location = "";
+            }
+
+            if (string.IsNullOrEmpty(Address))
+            {
+                Address = "";
+            }
+
+            string sql = "INSERT INTO FamilySchedule_Events (EventOwner, EventSport, EventDate, EventStartTime, EventEndTime, EventLocation, EventAddress, Enabled, SubmittedDateTime) " +
+            "VALUES ('" + Child + "','" + Sport + "','" + Date.ToShortDateString() + "','" + StartTime.ToShortTimeString() + "','" + EndTime.ToShortTimeString() + "','" + Location + "','" + Address + "','" + true + "','" + DateTime.Now + "')";
+
+            if (Execute.ExecuteStatementReturnBool(Connection.InitDBConnection(), sql) == true)
+            {
+                AlertText = "Your event for " + Child + " on " + Date.ToShortDateString() + " has been submitted.";
+                AlertHide = false;
+                AlertType = "alert-success";
+
+                Child = "";
+                Sport = "";
+                Date = DateTime.Now;
+                StartTime = Convert.ToDateTime("12:00AM");
+                EndTime = Convert.ToDateTime("12:00AM");
+                Location = "";
+                Address = "";
+                return;
+            }
+            else
+            {
+                AlertText = "Failed to submit data. Try again or contact the developer.";
+                AlertHide = false;
+                AlertType = "alert-danger";
+                return;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            AlertText = "An unexpected error occurred. Try again or contact the developer.";
+            AlertHide = false;
+            AlertType = "alert-danger";
+            return;
+        }
+    }
+
+}
