@@ -1,7 +1,8 @@
-﻿@page "/NewEvent"
+﻿@page "/EditEvent/{eventID}"
 @using System.Data;
+@inject NavigationManager navigate
 
-<h2 class="mb-3">New Event</h2>
+<h2 class="mb-3">Edit Event</h2>
 
 <div class="mb-3">
 
@@ -47,7 +48,8 @@
     </div>
     <div class="row">
         <div class="form-group col-md-3 mt-3">
-            <button class="btn" style="background-color:#ED702E; color:white;" onclick="@Submit">Submit</button>
+            <button class="btn btn-danger" onclick="@Delete">Delete</button>
+            <button class="btn" style="background-color:#ED702E; color:white;" onclick="@Submit">Update</button>
         </div>
     </div>
     <div class="alert @AlertType mt-3" role="alert" hidden="@AlertHide">
@@ -68,6 +70,9 @@
 
 @code {
 
+    [Parameter]
+    public string eventID { get; set; }
+
     private string Child;
     private string Sport;
     private DateTime Date = DateTime.Now;
@@ -79,6 +84,32 @@
     private string AlertType;
     private bool AlertHide;
 
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(eventID))
+        {
+            navigate.NavigateTo("", true);
+            return;
+        }
+
+        string sql = "SELECT EventOwner, EventSport, EventDate, EventStartTime, EventLocation, EventAddress, Enabled, SubmittedDateTime " +
+        "FROM FamilySchedule_Events WHERE ID = '" + eventID + "'";
+
+        DataTable dt = Execute.ExecuteSelectReturnDT(Connection.InitDBConnection(), sql);
+
+        if (dt != null && dt.Rows.Count > 0)
+        {
+            foreach (DataRow row in dt.Rows)
+            {
+                Child = row["EventOwner"].ToString();
+                Sport = row["EventSport"].ToString();
+                Date = Convert.ToDateTime(row["EventDate"]);
+                StartTime = Convert.ToDateTime(row["EventStartTime"]);
+                Location = row["EventLocation"].ToString();
+                Address = row["EventAddress"].ToString();
+            }
+        }
+    }
 
     private void Submit()
     {
@@ -130,26 +161,53 @@
                 Address = "";
             }
 
-            string sql = "INSERT INTO FamilySchedule_Events (EventOwner, EventSport, EventDate, EventStartTime, EventLocation, EventAddress, Enabled, SubmittedDateTime) " +
-            "VALUES ('" + Child + "','" + Sport + "','" + Date.ToShortDateString() + "','" + StartTime.ToShortTimeString() + "','" + Location + "','" + Address + "','" + true + "','" + DateTime.Now + "')";
+            string sql = "UPDATE FamilySchedule_Events SET EventOwner = '" + Child + "', EventSport = '" + Sport + "', EventDate = '" + Date.ToShortDateString() + "', EventStartTime = '" + StartTime.ToShortTimeString() + "', " +
+            "EventLocation = '" + Location + "', EventAddress = '" + Address + "' WHERE ID = '" + eventID + "'";
 
             if (Execute.ExecuteStatementReturnBool(Connection.InitDBConnection(), sql) == true)
             {
-                AlertText = "Your event for " + Child + " on " + Date.ToShortDateString() + " has been submitted.";
-                AlertHide = false;
-                AlertType = "alert-success";
-
-                Child = "";
-                Sport = "";
-                Date = DateTime.Now;
-                StartTime = Convert.ToDateTime("12:00AM");
-                Location = "";
-                Address = "";
+                navigate.NavigateTo("", true);
                 return;
             }
             else
             {
-                AlertText = "Failed to submit data. Try again or contact the developer.";
+                AlertText = "Failed to update data. Try again or contact the developer.";
+                AlertHide = false;
+                AlertType = "alert-danger";
+                return;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            AlertText = "An unexpected error occurred. Try again or contact the developer.";
+            AlertHide = false;
+            AlertType = "alert-danger";
+            return;
+        }
+    }
+
+    private void Delete()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(eventID))
+            {
+                return;
+            }
+
+            string sql = "DELETE FROM FamilySchedule_Events WHERE ID = '" + eventID + "'";
+
+            bool deleted = Execute.ExecuteStatementReturnBool(Connection.InitDBConnection(), sql);
+
+            if (deleted == true)
+            {
+                navigate.NavigateTo("", true);
+                return;
+            }
+            else
+            {
+                AlertText = "Failed to delete data. Try again or contact the developer.";
                 AlertHide = false;
                 AlertType = "alert-danger";
                 return;

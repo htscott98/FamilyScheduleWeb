@@ -1,12 +1,13 @@
 ﻿@page "/"
 @using System.Data;
+@inject NavigationManager navigate
 
 <h2 class="mb-3">Todays Schedule</h2>
 
 <div class="mb-3">
 
     @{
-        string sql = "SELECT EventOwner, EventSport, EventDate, EventStartTime, EventEndTime, EventLocation, EventAddress, Enabled, SubmittedDateTime " +
+        string sql = "SELECT ID, EventOwner, EventSport, EventDate, EventStartTime, EventLocation, EventAddress, Enabled, SubmittedDateTime " +
         "FROM FamilySchedule_Events WHERE Enabled = 1 AND CONVERT(date, EventDate) = CONVERT(date, GetDate()) " +
         "ORDER BY CONVERT(time, EventStartTime) ASC";
 
@@ -18,9 +19,11 @@
             {
                 <div class="card mb-1">
                     <div class="card-body">
-                        <h5 class="card-title">@row["EventOwner"] - @row["EventSport"]</h5>
-                        <p class="card-text">@row["EventDate"] : @row["EventStartTime"] - @row["EventEndTime"]<br />@row["EventLocation"]<br />@row["EventAddress"]</p>
-
+                        @{
+                            string eventID = row["ID"].ToString();
+                        }
+                        <button type="button" class="btn btn-link p-0" style="text-decoration:none !important;" @onclick="args => EditEvent(eventID)"><h5 class="card-title">@row["EventOwner"] - @row["EventSport"]</h5></button>
+                        <p class="card-text">@row["EventDate"] : @row["EventStartTime"]<br />@row["EventLocation"]<br />@row["EventAddress"]</p>
                     </div>
                 </div>
             }
@@ -40,7 +43,7 @@
     <h2 class="mt-5 mb-3">Upcoming Schedule</h2>
 
     @{
-        sql = "SELECT EventOwner, EventSport, EventDate, EventStartTime, EventEndTime, EventLocation, EventAddress, Enabled, SubmittedDateTime " +
+        sql = "SELECT ID, EventOwner, EventSport, EventDate, EventStartTime, EventLocation, EventAddress, Enabled, SubmittedDateTime " +
         "FROM FamilySchedule_Events WHERE Enabled = 1 AND CONVERT(date, EventDate) > CONVERT(date, GetDate()) " +
         "ORDER BY CONVERT(time, EventStartTime) ASC";
 
@@ -52,9 +55,11 @@
             {
                 <div class="card mb-1">
                     <div class="card-body">
-                        <h5 class="card-title">@row["EventOwner"] - @row["EventSport"]</h5>
-                        <p class="card-text">@row["EventDate"] : @row["EventStartTime"] - @row["EventEndTime"]<br />@row["EventLocation"]<br />@row["EventAddress"]</p>
-
+                        @{
+                            string eventID = row["ID"].ToString();
+                        }
+                        <button type="button" class="btn btn-link p-0" style="text-decoration:none !important;" @onclick="args => EditEvent(eventID)"><h5 class="card-title">@row["EventOwner"] - @row["EventSport"]</h5></button>
+                        <p class="card-text">@row["EventDate"] : @row["EventStartTime"]<br />@row["EventLocation"]<br />@row["EventAddress"]</p>
                     </div>
                 </div>
             }
@@ -72,3 +77,20 @@
     }
 
 </div>
+
+
+@code {
+
+
+    private void EditEvent(string eventID)
+    {
+        if (string.IsNullOrEmpty(eventID))
+        {
+            return;
+        }
+
+        navigate.NavigateTo($"EditEvent/{eventID}", true);
+        return;
+
+    }
+}
