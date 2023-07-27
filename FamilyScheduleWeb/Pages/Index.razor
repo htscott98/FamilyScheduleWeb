@@ -45,7 +45,7 @@
     @{
         sql = "SELECT ID, EventOwner, EventSport, EventDate, EventStartTime, EventLocation, EventAddress, Enabled, SubmittedDateTime " +
         "FROM FamilySchedule_Events WHERE Enabled = 1 AND CONVERT(date, EventDate) > CONVERT(date, GetDate()) " +
-        "ORDER BY CONVERT(time, EventStartTime) ASC";
+        "ORDER BY CONVERT(date, EventDate), CONVERT(time, EventStartTime)";
 
         dt = Execute.ExecuteSelectReturnDT(Connection.InitDBConnection(), sql);
 
